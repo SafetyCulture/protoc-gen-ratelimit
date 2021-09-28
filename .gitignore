@@ -1,0 +1,5 @@
+.env
+c.out
+.postgres
+.idea/
+bin/
