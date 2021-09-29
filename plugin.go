@@ -16,6 +16,15 @@ type PluginOptions struct {
 	ConfigFile string
 }
 
+// The configuration of the plugin
+type Config struct {
+	Descriptors   []string `yaml:"descriptors"`
+	DefaultLimits []Limit  `yaml:"default_limits"`
+	Delimiter     string   `yaml:"delimiter"`
+}
+
+var delimiter = "|"
+
 // SupportedFeatures describes a flag setting for supported features.
 var SupportedFeatures = uint64(plugin_go.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
 
@@ -30,23 +39,26 @@ func (p *Plugin) Generate(r *plugin_go.CodeGeneratorRequest) (*plugin_go.CodeGen
 		return nil, err
 	}
 
+	f, err := os.OpenFile(options.ConfigFile, os.O_RDONLY, 0666)
+	if err != nil {
+		return nil, err
+	}
+
+	var configYaml Config
+	err = yaml.NewDecoder(f).Decode(&configYaml)
+	if err != nil {
+		return nil, err
+	}
+	if configYaml.Delimiter != "" {
+		delimiter = configYaml.Delimiter
+	}
+
 	result := protokit.ParseCodeGenRequest(r)
 
 	resp := new(plugin_go.CodeGeneratorResponse)
 	template := gendoc.NewTemplate(result)
 
 	luaOutput, err := GenerateLuaBucketer(template)
-	if err != nil {
-		return nil, err
-	}
-
-	f, err := os.OpenFile(options.ConfigFile, os.O_RDONLY, 0666)
-	if err != nil {
-		return nil, err
-	}
-
-	var configYaml config
-	err = yaml.NewDecoder(f).Decode(&configYaml)
 	if err != nil {
 		return nil, err
 	}

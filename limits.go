@@ -5,12 +5,12 @@ import (
 	"strings"
 )
 
-type limit struct {
+type Limit struct {
 	Key   string
-	Value *yamlRateLimit
+	Value *YamlRateLimit
 }
 
-type limits []*limit
+type limits []*Limit
 
 func (s limits) Len() int      { return len(s) }
 func (s limits) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
@@ -36,7 +36,7 @@ func (s limits) Less(i, j int) bool {
 	return false
 }
 
-func sortLimits(limitsMap map[string]*limit) limits {
+func sortLimits(limitsMap map[string]*Limit) limits {
 	limitArr := make(limits, 0, len(limitsMap))
 
 	for _, l := range limitsMap {
@@ -48,9 +48,9 @@ func sortLimits(limitsMap map[string]*limit) limits {
 	return limitArr
 }
 
-func (s limits) Descriptors(names []string) []*yamlDescriptor {
-	descriptors := make([]*yamlDescriptor, 0, len(s))
-	descriptorsMap := make(map[string]*yamlDescriptor)
+func (s limits) Descriptors(names []string) []*YamlDescriptor {
+	descriptors := make([]*YamlDescriptor, 0, len(s))
+	descriptorsMap := make(map[string]*YamlDescriptor)
 
 	for _, l := range s {
 		keys := strings.Split((l.Key), delimiter)
@@ -58,10 +58,10 @@ func (s limits) Descriptors(names []string) []*yamlDescriptor {
 		for i, key := range keys {
 			prevKey := aggregateKey
 			aggregateKey = aggregateKey + delimiter + key
-			var desc *yamlDescriptor
+			var desc *YamlDescriptor
 			var ok bool
 			if desc, ok = descriptorsMap[aggregateKey]; !ok {
-				desc = &yamlDescriptor{
+				desc = &YamlDescriptor{
 					Key:   names[i],
 					Value: key,
 				}

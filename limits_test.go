@@ -8,41 +8,41 @@ import (
 )
 
 func TestSortLimits(t *testing.T) {
-	limits := map[string]*limit{
-		"|a|a|a|a": &limit{
+	limits := map[string]*Limit{
+		"|a|a|a|a": &Limit{
 			Key: "|a|a|a|a",
 		},
-		"c|c|a|a|a": &limit{
+		"c|c|a|a|a": &Limit{
 			Key: "c|c|a|a|a",
 		},
-		"b|c|a|a|a": &limit{
+		"b|c|a|a|a": &Limit{
 			Key: "b|c|a|a|a",
 		},
-		"a|c|a|a|a": &limit{
+		"a|c|a|a|a": &Limit{
 			Key: "a|c|a|a|a",
 		},
-		"c|b|a|a|a": &limit{
+		"c|b|a|a|a": &Limit{
 			Key: "c|b|a|a|a",
 		},
-		"b|b|a|a|a": &limit{
+		"b|b|a|a|a": &Limit{
 			Key: "b|b|a|a|a",
 		},
-		"a|b|a|a|a": &limit{
+		"a|b|a|a|a": &Limit{
 			Key: "a|b|a|a|a",
 		},
-		"c|a|a|a|a": &limit{
+		"c|a|a|a|a": &Limit{
 			Key: "c|a|a|a|a",
 		},
-		"b|a|a|a|a": &limit{
+		"b|a|a|a|a": &Limit{
 			Key: "b|a|a|a|a",
 		},
-		"a|a|a|a|a": &limit{
+		"a|a|a|a|a": &Limit{
 			Key: "a|a|a|a|a",
 		},
-		"a|a|a|a|c": &limit{
+		"a|a|a|a|c": &Limit{
 			Key: "a|a|a|a|c",
 		},
-		"a|a|a|a|d": &limit{
+		"a|a|a|a|d": &Limit{
 			Key: "a|a|a|a|d",
 		},
 	}
@@ -74,40 +74,40 @@ func TestSortLimits(t *testing.T) {
 
 func TestLimitsDescriptors(t *testing.T) {
 	l := limits{
-		&limit{
+		&Limit{
 			Key: "|a|a|a|a",
 		},
-		&limit{
+		&Limit{
 			Key: "c|c|a|a|a",
 		},
-		&limit{
+		&Limit{
 			Key: "b|c|a|a|a",
 		},
-		&limit{
+		&Limit{
 			Key: "a|c|a|a|a",
 		},
-		&limit{
+		&Limit{
 			Key: "c|b|a|a|a",
 		},
-		&limit{
+		&Limit{
 			Key: "b|b|a|a|a",
 		},
-		&limit{
+		&Limit{
 			Key: "a|b|a|a|a",
 		},
-		&limit{
+		&Limit{
 			Key: "c|a|a|a|a",
 		},
-		&limit{
+		&Limit{
 			Key: "b|a|a|a|a",
 		},
-		&limit{
+		&Limit{
 			Key: "a|a|a|a|a",
 		},
-		&limit{
+		&Limit{
 			Key: "a|a|a|a|c",
 		},
-		&limit{
+		&Limit{
 			Key: "a|a|a|a|d",
 		},
 	}.Descriptors([]string{"1", "2", "3", "4", "5"})

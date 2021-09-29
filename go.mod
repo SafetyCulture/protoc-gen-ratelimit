@@ -9,6 +9,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gotest.tools v2.2.0+incompatible
 )
 
 require (
@@ -30,5 +31,4 @@ require (
 	google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
-	gotest.tools v2.2.0+incompatible // indirect
 )

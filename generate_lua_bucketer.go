@@ -43,7 +43,7 @@ func GenerateLuaBucketer(template *gendoc.Template) ([]byte, error) {
 				bucket := servicePath
 				defaultPath := getDefaultMethodPath(file, service, method)
 
-				if opts, ok := method.Option("s12.common.ratelimit").(*ratelimit.MethodOptionsRateLimits); ok {
+				if opts, ok := method.Option("s12.protobuf.ratelimit.limit").(*ratelimit.MethodOptionsRateLimits); ok {
 					if opts.Limits != nil {
 						bucket = defaultPath
 					}

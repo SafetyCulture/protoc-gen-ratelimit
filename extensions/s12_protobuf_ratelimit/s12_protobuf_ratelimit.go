@@ -7,7 +7,7 @@ import (
 
 // This is needed so protoc-gen-doc will transform our extension
 func init() {
-	extensions.SetTransformer("s12.protobuf.ratelimit.ratelimit", func(payload interface{}) interface{} {
+	extensions.SetTransformer("s12.protobuf.ratelimit.limit", func(payload interface{}) interface{} {
 		ratelimit, ok := payload.(*ratelimit.MethodOptionsRateLimits)
 		if !ok {
 			return nil
@@ -19,7 +19,7 @@ func init() {
 
 // This is needed so protoc-gen-doc will transform our extension
 func init() {
-	extensions.SetTransformer("s12.protobuf.ratelimit.api_limits", func(payload interface{}) interface{} {
+	extensions.SetTransformer("s12.protobuf.ratelimit.api_limit", func(payload interface{}) interface{} {
 		ratelimit, ok := payload.(*ratelimit.ServiceOptionsRateLimits)
 		if !ok {
 			return nil

@@ -17,8 +17,8 @@ import (
 
 	genratelimit "github.com/SafetyCulture/protoc-gen-ratelimit"
 
-	_ "github.com/SafetyCulture/protoc-gen-ratelimit/extensions/s12_common_ratelimit" // imported for side effects
-	_ "github.com/pseudomuto/protoc-gen-doc/extensions/google_api_http"               // imported for side effects
+	_ "github.com/SafetyCulture/protoc-gen-ratelimit/extensions/s12_protobuf_ratelimit" // imported for side effects
+	_ "github.com/pseudomuto/protoc-gen-doc/extensions/google_api_http"                 // imported for side effects
 )
 
 func main() {

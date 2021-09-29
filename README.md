@@ -15,3 +15,10 @@ The plugin is invoked by passing the --ratelimit_out, and --ratelimit_opt option
 ```
 --doc_opt=ratelimit/config.yaml
 ```
+
+## Development
+
+This repo uses [buf][https://buf.build] to build Protocol Buffers.
+
+To generate the image for fixtures run `buf build -o fixtures/image.bin`.  
+To generate the annotations Go package run `buf generate`.
