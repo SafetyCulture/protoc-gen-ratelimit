@@ -3,6 +3,7 @@ package genratelimit
 import (
 	_ "embed"
 	"fmt"
+	"sort"
 
 	ratelimit "github.com/SafetyCulture/protoc-gen-ratelimit/proto"
 	gendoc "github.com/pseudomuto/protoc-gen-doc"
@@ -34,13 +35,13 @@ func GenerateRateLimitsConfig(template *gendoc.Template, cfg Config) ([]byte, er
 	descriptors := cfg.Descriptors
 	descriptorCount := len(descriptors)
 
-	limits := map[string]*Limit{}
+	limitsMap := map[string]*Limit{}
 	for _, def := range cfg.DefaultLimits {
 		key, err := formatKey(def.Key, "", descriptorCount)
 		if err != nil {
 			return nil, err
 		}
-		limits[key] = &Limit{
+		limitsMap[key] = &Limit{
 			Key:   key,
 			Value: def.Value,
 		}
@@ -61,7 +62,7 @@ func GenerateRateLimitsConfig(template *gendoc.Template, cfg Config) ([]byte, er
 							return nil, err
 						}
 
-						limits[limitKey] = &Limit{
+						limitsMap[limitKey] = &Limit{
 							limitKey,
 							&YamlRateLimit{
 								uint32(value.RequestsPerUnit),
@@ -85,7 +86,7 @@ func GenerateRateLimitsConfig(template *gendoc.Template, cfg Config) ([]byte, er
 								return nil, err
 							}
 
-							limits[limitKey] = &Limit{
+							limitsMap[limitKey] = &Limit{
 								limitKey,
 								&YamlRateLimit{
 									uint32(value.RequestsPerUnit),
@@ -102,11 +103,17 @@ func GenerateRateLimitsConfig(template *gendoc.Template, cfg Config) ([]byte, er
 
 	// Sort the limits so that the output is deterministic
 	// and empty/default values are last and not immediately matched
-	sortedLimits := sortLimits(limits)
+	limitsArr := make(limits, 0, len(limitsMap))
+
+	for _, l := range limitsMap {
+		limitsArr = append(limitsArr, l)
+	}
+
+	sort.Sort(limitsArr)
 
 	root := YamlRoot{
 		Domain:      "rate_per_user_bucket",
-		Descriptors: sortedLimits.Descriptors(cfg.Descriptors),
+		Descriptors: limitsArr.Descriptors(cfg.Descriptors),
 	}
 
 	return yaml.Marshal(root)

@@ -2,55 +2,56 @@ package genratelimit
 
 import (
 	"encoding/json"
+	"sort"
 	"testing"
 
 	"gotest.tools/assert"
 )
 
 func TestSortLimits(t *testing.T) {
-	limits := map[string]*Limit{
-		"|a|a|a|a": &Limit{
+	limits := limits{
+		&Limit{
 			Key: "|a|a|a|a",
 		},
-		"c|c|a|a|a": &Limit{
+		&Limit{
 			Key: "c|c|a|a|a",
 		},
-		"b|c|a|a|a": &Limit{
+		&Limit{
 			Key: "b|c|a|a|a",
 		},
-		"a|c|a|a|a": &Limit{
+		&Limit{
 			Key: "a|c|a|a|a",
 		},
-		"c|b|a|a|a": &Limit{
+		&Limit{
 			Key: "c|b|a|a|a",
 		},
-		"b|b|a|a|a": &Limit{
+		&Limit{
 			Key: "b|b|a|a|a",
 		},
-		"a|b|a|a|a": &Limit{
+		&Limit{
 			Key: "a|b|a|a|a",
 		},
-		"c|a|a|a|a": &Limit{
+		&Limit{
 			Key: "c|a|a|a|a",
 		},
-		"b|a|a|a|a": &Limit{
+		&Limit{
 			Key: "b|a|a|a|a",
 		},
-		"a|a|a|a|a": &Limit{
+		&Limit{
 			Key: "a|a|a|a|a",
 		},
-		"a|a|a|a|c": &Limit{
+		&Limit{
 			Key: "a|a|a|a|c",
 		},
-		"a|a|a|a|d": &Limit{
+		&Limit{
 			Key: "a|a|a|a|d",
 		},
 	}
 
-	l := sortLimits(limits)
+	sort.Sort(limits)
 
 	keys := []string{}
-	for _, v := range l {
+	for _, v := range limits {
 		keys = append(keys, v.Key)
 	}
 

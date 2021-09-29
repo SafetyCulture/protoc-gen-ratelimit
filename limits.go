@@ -1,7 +1,6 @@
 package genratelimit
 
 import (
-	"sort"
 	"strings"
 )
 
@@ -36,18 +35,7 @@ func (s limits) Less(i, j int) bool {
 	return false
 }
 
-func sortLimits(limitsMap map[string]*Limit) limits {
-	limitArr := make(limits, 0, len(limitsMap))
-
-	for _, l := range limitsMap {
-		limitArr = append(limitArr, l)
-	}
-
-	sort.Sort(limitArr)
-
-	return limitArr
-}
-
+// Descriptors returns envoyproxy/ratelimit formatted descriptors for the supplied limits
 func (s limits) Descriptors(names []string) []*YamlDescriptor {
 	descriptors := make([]*YamlDescriptor, 0, len(s))
 	descriptorsMap := make(map[string]*YamlDescriptor)
