@@ -7,7 +7,7 @@ import (
 	"regexp"
 	tmpl "text/template"
 
-	"github.com/SafetyCulture/s12-apis-go/common"
+	ratelimit "github.com/SafetyCulture/protoc-gen-ratelimit/proto"
 	gendoc "github.com/pseudomuto/protoc-gen-doc"
 	httpext "github.com/pseudomuto/protoc-gen-doc/extensions/google_api_http"
 )
@@ -43,14 +43,14 @@ func GenerateLuaBucketer(template *gendoc.Template) ([]byte, error) {
 				bucket := servicePath
 				defaultPath := getDefaultMethodPath(file, service, method)
 
-				if opts, ok := method.Option("s12.common.ratelimit").(*common.RateLimits); ok {
+				if opts, ok := method.Option("s12.common.ratelimit").(*ratelimit.MethodOptionsRateLimits); ok {
 					if opts.Limits != nil {
 						bucket = defaultPath
 					}
 
-					if opts.Bucket != common.RateLimitBucket_RATE_LIMIT_BUCKET_UNSPECIFIED {
+					if opts.Bucket != "" {
 						// We use the number as the strings value is likely out of date
-						bucket = fmt.Sprintf("s12.common.ratelimit:%d", opts.Bucket.Number())
+						bucket = fmt.Sprintf("custom_bucket:%s", opts.Bucket)
 					}
 				}
 

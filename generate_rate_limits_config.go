@@ -4,9 +4,9 @@ import (
 	_ "embed"
 	"fmt"
 
-	"github.com/SafetyCulture/s12-apis-go/common"
+	ratelimit "github.com/SafetyCulture/protoc-gen-ratelimit/proto"
 	gendoc "github.com/pseudomuto/protoc-gen-doc"
-	"gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v2"
 )
 
 type yamlRateLimit struct {
@@ -17,154 +17,100 @@ type yamlRateLimit struct {
 
 type yamlDescriptor struct {
 	Key         string
-	Value       string           `yaml:"value,omitempty"`
-	RateLimit   *yamlRateLimit   `yaml:"rate_limit,omitempty"`
-	Descriptors []yamlDescriptor `yaml:"descriptors,omitempty"`
+	Value       string            `yaml:"value,omitempty"`
+	RateLimit   *yamlRateLimit    `yaml:"rate_limit,omitempty"`
+	Descriptors []*yamlDescriptor `yaml:"descriptors,omitempty"`
 }
 
 type yamlRoot struct {
 	Domain      string
-	Descriptors []yamlDescriptor
-}
-
-type override struct {
-	OrgID     string         `yaml:"org_id"`
-	RateLimit *yamlRateLimit `yaml:"rate_limit,omitempty"`
+	Descriptors []*yamlDescriptor
 }
 
 type config struct {
-	Overrides []override
+	Descriptors   []string `yaml:"descriptors"`
+	DefaultLimits []limit  `yaml:"default_limits"`
 }
 
-type apiLimit struct {
-	Bucket string
-	Limit  int32
-}
-
-func generateDescriptors(clientClass string, limits []apiLimit, overrideDescriptors []yamlDescriptor) yamlDescriptor {
-	descriptors := make([]yamlDescriptor, 0)
-
-	for _, limit := range limits {
-		rateLimit := &yamlRateLimit{
-			uint32(limit.Limit),
-			"minute",
-			false,
-		}
-		if limit.Limit == -1 {
-			rateLimit = &yamlRateLimit{
-				Unlimited: false,
-			}
-		}
-
-		descriptors = append(descriptors, yamlDescriptor{
-			Key:       "bucket",
-			Value:     limit.Bucket,
-			RateLimit: rateLimit,
-		})
-	}
-
-	classDescriptor := newDescriptorTuple(clientClass, "", "", descriptors)
-	// Overrides should be at the top of the descriptor list
-	classDescriptor.Descriptors = append(overrideDescriptors, classDescriptor.Descriptors...)
-
-	return classDescriptor
-}
+const delimiter = "|"
 
 func GenerateRateLimitsConfig(template *gendoc.Template, cfg config) ([]byte, error) {
-	var defaultLimit *common.Limits
+	descriptors := cfg.Descriptors
+	descriptorCount := len(descriptors)
 
-	apiLimits := map[string][]apiLimit{}
-	appendApiLimit := func(bucket string, limits *common.Limits) {
-		def := limits.Default
-		apiLimits["default"] = append(apiLimits["default"], apiLimit{bucket, def})
-
-		if limits.Api != 0 {
-			apiLimits["sc_api"] = append(apiLimits["sc_api"], apiLimit{bucket, limits.Api})
+	limits := map[string]*limit{}
+	for _, def := range cfg.DefaultLimits {
+		key, err := formatKey(def.Key, "", descriptorCount)
+		if err != nil {
+			return nil, err
 		}
-		if limits.Integration != 0 {
-			apiLimits["sc_integration"] = append(apiLimits["sc_integration"], apiLimit{bucket, limits.Integration})
-		}
-
-		if limits.Mobile != 0 {
-			apiLimits["sc_device"] = append(apiLimits["sc_device"], apiLimit{bucket, limits.Mobile})
-		}
-		if limits.Web != 0 {
-			apiLimits["sc_web"] = append(apiLimits["sc_web"], apiLimit{bucket, limits.Web})
-		}
-
-		if limits.Unauthenticated != 0 {
-			apiLimits["unauthenticated"] = append(apiLimits["unauthenticated"], apiLimit{bucket, limits.Unauthenticated})
-		}
-	}
-
-	for _, file := range template.Files {
-		if file.Package == "s12.common" {
-			for _, enum := range file.Enums {
-				if enum.Name == "RateLimitBucket" {
-					for _, value := range enum.Values {
-						if opts, ok := value.Option("s12.common.limits").(*common.Limits); ok {
-							if value.Number == "0" {
-								defaultLimit = opts
-							}
-						}
-						appendApiLimit(fmt.Sprintf("s12.common.ratelimit:%s", value.Number), defaultLimit)
-					}
-				}
-			}
+		limits[key] = &limit{
+			Key:   key,
+			Value: def.Value,
 		}
 	}
 
 	for _, file := range template.Files {
 		for _, service := range file.Services {
 			servicePath := getServicePath(file, service)
-			limit := defaultLimit
 
-			if opts, ok := service.Option("s12.common.api_limits").(*common.ApiRateLimits); ok {
-				if opts.Limits != nil && opts.Bucket != common.RateLimitBucket_RATE_LIMIT_BUCKET_UNSPECIFIED {
+			if opts, ok := service.Option("s12.protobuf.ratelimit.api_limits").(*ratelimit.ServiceOptionsRateLimits); ok {
+				if opts.Limits != nil && opts.Bucket != "" {
 					return nil, fmt.Errorf("%s %s cannot use bucket and limits together", file.Name, service.FullName)
 				}
 				if opts.Limits != nil {
-					limit = opts.Limits
+					for key, value := range opts.Limits {
+						limitKey, err := formatKey(key, servicePath, descriptorCount)
+						if err != nil {
+							return nil, err
+						}
+
+						limits[limitKey] = &limit{
+							limitKey,
+							&yamlRateLimit{
+								uint32(value.RequestsPerUnit),
+								value.Unit,
+								value.Unlimited,
+							},
+						}
+					}
 				}
 			}
-			appendApiLimit(servicePath, limit)
 
 			for _, method := range service.Methods {
-				if opts, ok := method.Option("s12.common.ratelimit").(*common.ApiRateLimits); ok {
-					if opts.Limits != nil && opts.Bucket != common.RateLimitBucket_RATE_LIMIT_BUCKET_UNSPECIFIED {
+				if opts, ok := method.Option("s12.protobuf.ratelimit.ratelimit").(*ratelimit.MethodOptionsRateLimits); ok {
+					if opts.Limits != nil && opts.Bucket != "" {
 						return nil, fmt.Errorf("%s %s %s cannot use bucket and limits together", file.Name, service.FullName, method.Name)
 					}
 					if opts.Limits != nil {
-						appendApiLimit(getDefaultMethodPath(file, service, method), opts.Limits)
+						for key, value := range opts.Limits {
+							limitKey, err := formatKey(key, getDefaultMethodPath(file, service, method), descriptorCount)
+							if err != nil {
+								return nil, err
+							}
+
+							limits[limitKey] = &limit{
+								limitKey,
+								&yamlRateLimit{
+									uint32(value.RequestsPerUnit),
+									value.Unit,
+									value.Unlimited,
+								},
+							}
+						}
 					}
 				}
 			}
 		}
 	}
 
-	overrideDescriptors := []yamlDescriptor{}
-	for _, override := range cfg.Overrides {
-		overrideDescriptors = append(
-			overrideDescriptors,
-			newDescriptorTuple("", override.OrgID, "", []yamlDescriptor{
-				{
-					Key:       "bucket",
-					RateLimit: override.RateLimit,
-				},
-			}).Descriptors...,
-		)
-	}
+	// Sort the limits so that the output is deterministic
+	// and empty/default values are last and not immediately matched
+	sortedLimits := sortLimits(limits)
 
 	root := yamlRoot{
-		Domain: "rate_per_user_bucket",
-		Descriptors: []yamlDescriptor{
-			generateDescriptors("sc_api", apiLimits["sc_api"], overrideDescriptors),
-			generateDescriptors("sc_integration", apiLimits["sc_integration"], overrideDescriptors),
-			generateDescriptors("sc_web", apiLimits["sc_web"], overrideDescriptors),
-			generateDescriptors("sc_mobile", apiLimits["sc_mobile"], overrideDescriptors),
-			generateDescriptors("unauthenticated", apiLimits["unauthenticated"], overrideDescriptors),
-			generateDescriptors("", apiLimits["default"], overrideDescriptors),
-		},
+		Domain:      "rate_per_user_bucket",
+		Descriptors: sortedLimits.Descriptors(cfg.Descriptors),
 	}
 
 	return yaml.Marshal(root)

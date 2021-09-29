@@ -2,7 +2,7 @@
 
 local M = {}
 
-function M.get_ratelimit_bucket(path, method)
+function M.get_ratelimit_bucket(method, path)
   {{- range $method, $paramMap := .}}
   if method == "{{ $method }}" then
     {{- range $hasParams, $paths := $paramMap}}

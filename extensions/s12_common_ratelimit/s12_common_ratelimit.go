@@ -1,14 +1,14 @@
 package extensions
 
 import (
-	"github.com/SafetyCulture/s12-apis-go/common"
+	ratelimit "github.com/SafetyCulture/protoc-gen-ratelimit/proto"
 	"github.com/pseudomuto/protoc-gen-doc/extensions"
 )
 
 // This is needed so protoc-gen-doc will transform our extension
 func init() {
-	extensions.SetTransformer("s12.common.ratelimit", func(payload interface{}) interface{} {
-		ratelimit, ok := payload.(*common.RateLimits)
+	extensions.SetTransformer("s12.protobuf.ratelimit.ratelimit", func(payload interface{}) interface{} {
+		ratelimit, ok := payload.(*ratelimit.MethodOptionsRateLimits)
 		if !ok {
 			return nil
 		}
@@ -19,20 +19,8 @@ func init() {
 
 // This is needed so protoc-gen-doc will transform our extension
 func init() {
-	extensions.SetTransformer("s12.common.limits", func(payload interface{}) interface{} {
-		ratelimit, ok := payload.(*common.Limits)
-		if !ok {
-			return nil
-		}
-
-		return ratelimit
-	})
-}
-
-// This is needed so protoc-gen-doc will transform our extension
-func init() {
-	extensions.SetTransformer("s12.common.api_limits", func(payload interface{}) interface{} {
-		ratelimit, ok := payload.(*common.ApiRateLimits)
+	extensions.SetTransformer("s12.protobuf.ratelimit.api_limits", func(payload interface{}) interface{} {
+		ratelimit, ok := payload.(*ratelimit.ServiceOptionsRateLimits)
 		if !ok {
 			return nil
 		}
