@@ -4,7 +4,7 @@ This is a Rate Limit generator for Google Protocol Buffers compiler `protoc`. Th
 
 ## Installation
 
-```
+```bash
 go get -u github.com/SafetyCulture/protoc-gen-ratelimit/cmd/protoc-gen-ratelimit
 ```
 
@@ -12,12 +12,13 @@ go get -u github.com/SafetyCulture/protoc-gen-ratelimit/cmd/protoc-gen-ratelimit
 
 The plugin is invoked by passing the --ratelimit_out, and --ratelimit_opt options to the protoc compiler. The option has the following format:
 
-```
+```bash
 --doc_opt=ratelimit/config.yaml
 ```
 
 Annotations for rate limits can be applied at the service or method level. Here is an example of what that looks like:
-```proto3
+
+```proto
 service TasksService {
   option (s12.protobuf.ratelimit.api_limit) = {
     limits: {
