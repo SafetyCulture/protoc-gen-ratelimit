@@ -3,10 +3,10 @@ package genratelimit
 import (
 	"os"
 
-	"github.com/golang/protobuf/proto"
 	plugin_go "github.com/golang/protobuf/protoc-gen-go/plugin"
 	gendoc "github.com/pseudomuto/protoc-gen-doc"
 	"github.com/pseudomuto/protokit"
+	"google.golang.org/protobuf/proto"
 	"gopkg.in/yaml.v3"
 )
 
