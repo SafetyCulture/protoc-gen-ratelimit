@@ -16,7 +16,7 @@ type PluginOptions struct {
 	ConfigFile string
 }
 
-// The configuration of the plugin
+// Config is the configuration of the plugin
 type Config struct {
 	Domain        string   `yaml:"domain"`
 	Descriptors   []string `yaml:"descriptors"`
