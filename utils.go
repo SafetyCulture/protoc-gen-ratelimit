@@ -7,12 +7,8 @@ import (
 	gendoc "github.com/pseudomuto/protoc-gen-doc"
 )
 
-func getServicePath(file *gendoc.File, service *gendoc.Service) string {
-	return fmt.Sprintf("%s.%s", file.Package, service.Name)
-}
-
-func getDefaultMethodPath(file *gendoc.File, service *gendoc.Service, method *gendoc.ServiceMethod) string {
-	return fmt.Sprintf("/%s/%s", getServicePath(file, service), method.Name)
+func getDefaultMethodPath(service *gendoc.Service, method *gendoc.ServiceMethod) string {
+	return fmt.Sprintf("/%s/%s", service.FullName, method.Name)
 }
 
 func formatKey(key, bucketName string, count int) (string, error) {

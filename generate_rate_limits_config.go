@@ -31,6 +31,7 @@ type YamlRoot struct {
 	Descriptors []*YamlDescriptor
 }
 
+// GenerateRateLimitsConfig generates a YAML file containing the rate limits
 func GenerateRateLimitsConfig(template *gendoc.Template, cfg Config) ([]byte, error) {
 	descriptors := cfg.Descriptors
 	descriptorCount := len(descriptors)
@@ -49,15 +50,13 @@ func GenerateRateLimitsConfig(template *gendoc.Template, cfg Config) ([]byte, er
 
 	for _, file := range template.Files {
 		for _, service := range file.Services {
-			servicePath := getServicePath(file, service)
-
 			if opts, ok := service.Option("s12.protobuf.ratelimit.api_limit").(*ratelimit.ServiceOptionsRateLimits); ok {
 				if opts.Limits != nil && opts.Bucket != "" {
 					return nil, fmt.Errorf("%s %s cannot use bucket and limits together", file.Name, service.FullName)
 				}
 				if opts.Limits != nil {
 					for key, value := range opts.Limits {
-						limitKey, err := formatKey(key, servicePath, descriptorCount)
+						limitKey, err := formatKey(key, service.FullName, descriptorCount)
 						if err != nil {
 							return nil, err
 						}
@@ -81,7 +80,7 @@ func GenerateRateLimitsConfig(template *gendoc.Template, cfg Config) ([]byte, er
 					}
 					if opts.Limits != nil {
 						for key, value := range opts.Limits {
-							limitKey, err := formatKey(key, getDefaultMethodPath(file, service, method), descriptorCount)
+							limitKey, err := formatKey(key, getDefaultMethodPath(service, method), descriptorCount)
 							if err != nil {
 								return nil, err
 							}
@@ -112,7 +111,7 @@ func GenerateRateLimitsConfig(template *gendoc.Template, cfg Config) ([]byte, er
 	sort.Sort(limitsArr)
 
 	root := YamlRoot{
-		Domain:      "rate_per_user_bucket",
+		Domain:      cfg.Domain,
 		Descriptors: limitsArr.Descriptors(cfg.Descriptors),
 	}
 

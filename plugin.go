@@ -18,6 +18,7 @@ type PluginOptions struct {
 
 // The configuration of the plugin
 type Config struct {
+	Domain        string   `yaml:"domain"`
 	Descriptors   []string `yaml:"descriptors"`
 	DefaultLimits []Limit  `yaml:"default_limits"`
 	Delimiter     string   `yaml:"delimiter"`

@@ -15,14 +15,18 @@ import (
 //go:embed templates/bucketer.lua.tmpl
 var bucketerTemplate string
 
+// Used to identify parameters in a path e.g. `/users/{used_id}`
 var paramMatch = regexp.MustCompile(`({\w+})`)
 
+// A path with an associated bucket
 type pattern struct {
 	Path   string
 	Bucket string
 }
 
 func GenerateLuaBucketer(template *gendoc.Template) ([]byte, error) {
+	// All of the paths grouped by method, and if they include path parameters
+	// Paths with parameters require pattern matching.
 	httpMethods := map[string]map[bool][]pattern{}
 	addPattern := func(method, path, bucket string, hasParams bool) {
 		if httpMethods[method] == nil {
@@ -37,11 +41,9 @@ func GenerateLuaBucketer(template *gendoc.Template) ([]byte, error) {
 
 	for _, file := range template.Files {
 		for _, service := range file.Services {
-			servicePath := getServicePath(file, service)
-
 			for _, method := range service.Methods {
-				bucket := servicePath
-				defaultPath := getDefaultMethodPath(file, service, method)
+				bucket := service.FullName
+				defaultPath := getDefaultMethodPath(service, method)
 
 				if opts, ok := method.Option("s12.protobuf.ratelimit.limit").(*ratelimit.MethodOptionsRateLimits); ok {
 					if opts.Limits != nil {
@@ -54,6 +56,7 @@ func GenerateLuaBucketer(template *gendoc.Template) ([]byte, error) {
 					}
 				}
 
+				// Default method/path combination
 				addPattern("POST", defaultPath, bucket, false)
 
 				if opts, ok := method.Option("google.api.http").(httpext.HTTPExtension); ok {

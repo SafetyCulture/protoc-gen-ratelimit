@@ -27,6 +27,7 @@ func TestGenerateRateLimitsConfig(t *testing.T) {
 	template := gendoc.NewTemplate(result)
 
 	content, err := genratelimit.GenerateRateLimitsConfig(template, genratelimit.Config{
+		Domain:      "my_domain",
 		Descriptors: []string{"api_class", "bucket"},
 		DefaultLimits: []genratelimit.Limit{
 			{

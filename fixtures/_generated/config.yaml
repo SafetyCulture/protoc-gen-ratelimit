@@ -1,4 +1,4 @@
-domain: rate_per_user_bucket
+domain: my_domain
 descriptors:
     - key: api_class
       value: private_api
