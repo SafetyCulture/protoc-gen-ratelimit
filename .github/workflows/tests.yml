@@ -28,7 +28,8 @@ jobs:
           curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
           chmod +x ./cc-test-reporter
           ./cc-test-reporter before-build
-          go test -coverprofile c.out -coverpkg ./... ./...
+          go test -coverprofile c.out.tmp -coverpkg ./... ./...
+          cat c.out.tmp | grep -v "pb.go" > c.out
           cc-test-reporter after-build --prefix $(go list -m)
 
       - name: Upload Coverage Result Artifact
