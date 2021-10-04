@@ -105,11 +105,12 @@ default_limits:
     value:
       unit: minute
       requests_per_unit: 800
+
   # Private APIs have no limits by default
   - key: "private_api"
     value:
       unlimited: true
-  
+
   # This customer pays us lots of money, so we given them an increased ratelimit
   - key: "|user_abc122"
     value:
@@ -128,5 +129,6 @@ A complete example can be found in `protos/`.
 
 This repo uses [buf](https://buf.build) to build Protocol Buffers.
 
-To generate the image for fixtures run `buf build -o fixtures/image.bin`.  
+To generate the image for fixtures run `buf build -o fixtures/image.bin`.
+
 To generate the annotations Go package run `buf generate`.
