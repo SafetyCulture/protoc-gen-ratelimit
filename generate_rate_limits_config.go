@@ -36,6 +36,7 @@ func GenerateRateLimitsConfig(template *gendoc.Template, cfg Config) ([]byte, er
 	descriptors := cfg.Descriptors
 	descriptorCount := len(descriptors)
 
+	// Add the default limits in
 	limitsMap := map[string]*Limit{}
 	for _, def := range cfg.DefaultLimits {
 		key, err := formatKey(def.Key, "", descriptorCount)
