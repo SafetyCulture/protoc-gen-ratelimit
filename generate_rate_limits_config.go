@@ -1,7 +1,6 @@
 package genratelimit
 
 import (
-	_ "embed"
 	"fmt"
 	"sort"
 
@@ -10,14 +9,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// The rate limit being applied to a descriptor
+// YamlRateLimit is the rate limit being applied to a descriptor
 type YamlRateLimit struct {
 	RequestsPerUnit uint32 `yaml:"requests_per_unit,omitempty"`
 	Unit            string `yaml:"unit,omitempty"`
 	Unlimited       bool   `yaml:"unlimited,omitempty"`
 }
 
-// The description of a rate limiting tuple
+// YamlDescriptor is the description of a rate limiting tuple
 type YamlDescriptor struct {
 	Key         string
 	Value       string            `yaml:"value,omitempty"`
@@ -25,7 +24,7 @@ type YamlDescriptor struct {
 	Descriptors []*YamlDescriptor `yaml:"descriptors,omitempty"`
 }
 
-// The root of the YAML document
+// YamlRoot is the root of the YAML document
 type YamlRoot struct {
 	Domain      string
 	Descriptors []*YamlDescriptor

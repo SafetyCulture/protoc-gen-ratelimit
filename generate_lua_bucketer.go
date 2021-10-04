@@ -2,6 +2,7 @@ package genratelimit
 
 import (
 	"bytes"
+	// For embedded templates
 	_ "embed"
 	"fmt"
 	"regexp"
@@ -24,6 +25,7 @@ type pattern struct {
 	Bucket string
 }
 
+// GenerateLuaBucketer generates the Lua bucketer
 func GenerateLuaBucketer(template *gendoc.Template) ([]byte, error) {
 	// All of the paths grouped by method, and if they include path parameters
 	// Paths with parameters require pattern matching.

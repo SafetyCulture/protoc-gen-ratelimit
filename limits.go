@@ -4,6 +4,7 @@ import (
 	"strings"
 )
 
+// Limit is the limit applied to specific descriptors
 type Limit struct {
 	Key   string
 	Value *YamlRateLimit
@@ -11,8 +12,13 @@ type Limit struct {
 
 type limits []*Limit
 
-func (s limits) Len() int      { return len(s) }
+// Len returns the length of the limits
+func (s limits) Len() int { return len(s) }
+
+// Swap swaps the two limits
 func (s limits) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+
+// Less returns true if the limit at index i is less than the limit at index j
 func (s limits) Less(i, j int) bool {
 	iKeys := strings.Split(s[i].Key, delimiter)
 	jKeys := strings.Split(s[j].Key, delimiter)
