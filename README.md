@@ -111,7 +111,7 @@ default_limits:
     value:
       unlimited: true
 
-  # This customer pays us lots of money, so we given them an increased ratelimit
+  # This customer is running a migration, temporarily increase their limit
   - key: "|user_abc122"
     value:
       unlimited: true
