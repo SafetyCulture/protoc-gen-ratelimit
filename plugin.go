@@ -40,7 +40,7 @@ func (p *Plugin) Generate(r *plugin_go.CodeGeneratorRequest) (*plugin_go.CodeGen
 		return nil, err
 	}
 
-	f, err := os.OpenFile(options.ConfigFile, os.O_RDONLY, 0666)
+	f, err := os.Open(options.ConfigFile)
 	if err != nil {
 		return nil, err
 	}

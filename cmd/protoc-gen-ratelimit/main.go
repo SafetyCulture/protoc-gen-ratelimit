@@ -6,7 +6,7 @@
 //
 //     protoc --ratelimit_out=. --doc_opt=ratelimit/config.yaml protos/*.proto
 //
-// For more details, check out the README at https://github.com/pseudomuto/protoc-gen-doc
+// For more details, check out the README at https://github.com/SafetyCulture/protoc-gen-ratelimit
 package main
 
 import (
