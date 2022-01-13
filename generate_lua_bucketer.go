@@ -8,7 +8,7 @@ import (
 	"regexp"
 	tmpl "text/template"
 
-	ratelimit "github.com/SafetyCulture/protoc-gen-ratelimit/proto"
+	ratelimit "github.com/SafetyCulture/protoc-gen-ratelimit/s12/protobuf/ratelimit"
 	gendoc "github.com/pseudomuto/protoc-gen-doc"
 	httpext "github.com/pseudomuto/protoc-gen-doc/extensions/google_api_http"
 )

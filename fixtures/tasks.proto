@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "proto/annotations.proto";
+import "s12/protobuf/ratelimit/annotations.proto";
 import "google/api/annotations.proto";
 
 package api.tasks.v1;
