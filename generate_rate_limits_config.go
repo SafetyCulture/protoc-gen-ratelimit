@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	ratelimit "github.com/SafetyCulture/protoc-gen-ratelimit/proto"
+	ratelimit "github.com/SafetyCulture/protoc-gen-ratelimit/s12/protobuf/ratelimit"
 	gendoc "github.com/pseudomuto/protoc-gen-doc"
 	"gopkg.in/yaml.v3"
 )

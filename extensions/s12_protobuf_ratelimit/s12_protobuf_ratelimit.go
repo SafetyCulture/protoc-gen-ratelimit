@@ -1,7 +1,7 @@
 package extensions
 
 import (
-	ratelimit "github.com/SafetyCulture/protoc-gen-ratelimit/proto"
+	ratelimit "github.com/SafetyCulture/protoc-gen-ratelimit/s12/protobuf/ratelimit"
 	"github.com/pseudomuto/protoc-gen-doc/extensions"
 )
 
