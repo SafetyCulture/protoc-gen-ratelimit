@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/golang/protobuf v1.5.2
 	github.com/pseudomuto/protoc-gen-doc v1.5.0
-	github.com/pseudomuto/protokit v0.2.0
+	github.com/pseudomuto/protokit v0.2.1
 	github.com/stretchr/testify v1.7.1
 	google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced
 	google.golang.org/protobuf v1.28.0
