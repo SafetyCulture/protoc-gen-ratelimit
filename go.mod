@@ -3,7 +3,7 @@ module github.com/SafetyCulture/protoc-gen-ratelimit
 go 1.17
 
 require (
-	github.com/golang/protobuf v1.5.2
+	github.com/golang/protobuf v1.5.3
 	github.com/pseudomuto/protoc-gen-doc v1.5.1
 	github.com/pseudomuto/protokit v0.2.1
 	github.com/stretchr/testify v1.8.2
