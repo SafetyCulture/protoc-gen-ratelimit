@@ -4,7 +4,7 @@
 //
 // Example: generate ratelimit configuration files for Envoy:
 //
-//     protoc --ratelimit_out=. --doc_opt=ratelimit/config.yaml protos/*.proto
+//	protoc --ratelimit_out=. --doc_opt=ratelimit/config.yaml protos/*.proto
 //
 // For more details, check out the README at https://github.com/SafetyCulture/protoc-gen-ratelimit
 package main
