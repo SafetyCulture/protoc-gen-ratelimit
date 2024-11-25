@@ -6,7 +6,7 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/pseudomuto/protoc-gen-doc v1.5.1
 	github.com/pseudomuto/protokit v0.2.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	google.golang.org/genproto v0.0.0-20210917145530-b395a37504d4
 	google.golang.org/protobuf v1.35.2
 	gopkg.in/yaml.v3 v3.0.1
