@@ -4,21 +4,16 @@
 //
 // Example: generate ratelimit configuration files for Envoy:
 //
-//	protoc --ratelimit_out=. --doc_opt=ratelimit/config.yaml protos/*.proto
+//	protoc --ratelimit_out=. --ratelimit_opt=config.yaml protos/*.proto
 //
 // For more details, check out the README at https://github.com/SafetyCulture/protoc-gen-ratelimit
 package main
 
 import (
-	"github.com/pseudomuto/protokit"
-
-	"log"
 	"os"
 
 	genratelimit "github.com/SafetyCulture/protoc-gen-ratelimit"
-
-	_ "github.com/SafetyCulture/protoc-gen-ratelimit/extensions/s12_protobuf_ratelimit" // imported for side effects
-	_ "github.com/pseudomuto/protoc-gen-doc/extensions/google_api_http"                 // imported for side effects
+	"google.golang.org/protobuf/compiler/protogen"
 )
 
 func main() {
@@ -26,9 +21,8 @@ func main() {
 		os.Exit(flags.Code())
 	}
 
-	if err := protokit.RunPlugin(new(genratelimit.Plugin)); err != nil {
-		log.Fatal(err)
-	}
+	// Run the plugin - it doesn't return anything
+	protogen.Options{}.Run(genratelimit.Run)
 }
 
 // HandleFlags checks if there's a match and returns true if it was "handled"

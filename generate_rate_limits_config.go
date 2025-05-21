@@ -6,7 +6,8 @@ import (
 	"sort"
 
 	ratelimit "github.com/SafetyCulture/protoc-gen-ratelimit/s12/protobuf/ratelimit"
-	gendoc "github.com/pseudomuto/protoc-gen-doc"
+	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/proto"
 	"gopkg.in/yaml.v3"
 )
 
@@ -32,7 +33,7 @@ type YamlRoot struct {
 }
 
 // GenerateRateLimitsConfig generates a YAML file containing the rate limits
-func GenerateRateLimitsConfig(template *gendoc.Template, cfg Config) ([]byte, error) {
+func GenerateRateLimitsConfig(plugin *protogen.Plugin, cfg Config) ([]byte, error) {
 	descriptors := cfg.Descriptors
 	descriptorCount := len(descriptors)
 
@@ -49,15 +50,16 @@ func GenerateRateLimitsConfig(template *gendoc.Template, cfg Config) ([]byte, er
 		}
 	}
 
-	for _, file := range template.Files {
-		for _, service := range file.Services {
-			if opts, ok := service.Option("s12.protobuf.ratelimit.api_limit").(*ratelimit.ServiceOptionsRateLimits); ok {
-				if opts.Limits != nil && opts.Bucket != "" {
-					return nil, fmt.Errorf("%s %s cannot use bucket and limits together", file.Name, service.FullName)
+	for _, file := range plugin.Request.SourceFileDescriptors {
+		for _, service := range file.GetService() {
+			// Extract API limit options
+			if apiOpts, ok := proto.GetExtension(service.GetOptions(), ratelimit.E_ApiLimit).(*ratelimit.ServiceOptionsRateLimits); ok && apiOpts != nil {
+				if apiOpts.Limits != nil && apiOpts.Bucket != "" {
+					return nil, fmt.Errorf("%s %s cannot use bucket and limits together", file.GetName(), service.GetName())
 				}
-				if opts.Limits != nil {
-					for key, value := range opts.Limits {
-						limitKey, err := formatKey(key, service.FullName, descriptorCount)
+				if apiOpts.Limits != nil {
+					for key, value := range apiOpts.Limits {
+						limitKey, err := formatKey(key, fmt.Sprintf("%s.%s", file.GetPackage(), service.GetName()), descriptorCount)
 						if err != nil {
 							return nil, err
 						}
@@ -74,14 +76,17 @@ func GenerateRateLimitsConfig(template *gendoc.Template, cfg Config) ([]byte, er
 				}
 			}
 
-			for _, method := range service.Methods {
-				if opts, ok := method.Option("s12.protobuf.ratelimit.limit").(*ratelimit.MethodOptionsRateLimits); ok {
-					if opts.Limits != nil && opts.Bucket != "" {
-						return nil, fmt.Errorf("%s %s %s cannot use bucket and limits together", file.Name, service.FullName, method.Name)
+			for _, method := range service.GetMethod() {
+				// Extract rate limit options
+				if methodOpts, ok := proto.GetExtension(method.GetOptions(), ratelimit.E_Limit).(*ratelimit.MethodOptionsRateLimits); ok && methodOpts != nil {
+					if methodOpts.Limits != nil && methodOpts.Bucket != "" {
+						return nil, fmt.Errorf("%s %s %s cannot use bucket and limits together", file.GetName(), service.GetName(), method.GetName())
 					}
-					if opts.Limits != nil {
-						for key, value := range opts.Limits {
-							limitKey, err := formatKey(key, getDefaultMethodPath(service, method), descriptorCount)
+					if methodOpts.Limits != nil {
+						for key, value := range methodOpts.Limits {
+							// Use our own implementation instead of getDefaultMethodPath
+							defaultPath := fmt.Sprintf("/%s.%s/%s", file.GetPackage(), service.GetName(), method.GetName())
+							limitKey, err := formatKey(key, defaultPath, descriptorCount)
 							if err != nil {
 								return nil, err
 							}

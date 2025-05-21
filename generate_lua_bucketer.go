@@ -9,8 +9,9 @@ import (
 	tmpl "text/template"
 
 	ratelimit "github.com/SafetyCulture/protoc-gen-ratelimit/s12/protobuf/ratelimit"
-	gendoc "github.com/pseudomuto/protoc-gen-doc"
-	httpext "github.com/pseudomuto/protoc-gen-doc/extensions/google_api_http"
+	"google.golang.org/genproto/googleapis/api/annotations"
+	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/proto"
 )
 
 //go:embed templates/bucketer.lua.tmpl
@@ -25,8 +26,34 @@ type pattern struct {
 	Bucket string
 }
 
+func httpRuleToPattern(rule *annotations.HttpRule, bucket string) (string, string, string, bool) {
+	var method string
+	var path string
+
+	switch rule.Pattern.(type) {
+	case *annotations.HttpRule_Get:
+		method = "GET"
+		path = rule.GetGet()
+	case *annotations.HttpRule_Put:
+		method = "PUT"
+		path = rule.GetPut()
+	case *annotations.HttpRule_Post:
+		method = "POST"
+		path = rule.GetPost()
+	case *annotations.HttpRule_Delete:
+		method = "DELETE"
+		path = rule.GetDelete()
+	case *annotations.HttpRule_Patch:
+		method = "PATCH"
+		path = rule.GetPatch()
+	}
+
+	pathPattern := paramMatch.ReplaceAllString(path, ".+")
+	return method, pathPattern, bucket, pathPattern != path
+}
+
 // GenerateLuaBucketer generates the Lua bucketer
-func GenerateLuaBucketer(template *gendoc.Template) ([]byte, error) {
+func GenerateLuaBucketer(plugin *protogen.Plugin) ([]byte, error) {
 	// All of the paths grouped by method, and if they include path parameters
 	// Paths with parameters require pattern matching.
 	httpMethods := map[string]map[bool][]pattern{}
@@ -41,32 +68,32 @@ func GenerateLuaBucketer(template *gendoc.Template) ([]byte, error) {
 		httpMethods[method][hasParams] = append(httpMethods[method][hasParams], pattern{path, bucket})
 	}
 
-	for _, file := range template.Files {
-		for _, service := range file.Services {
-			for _, method := range service.Methods {
-				bucket := service.FullName
-				defaultPath := getDefaultMethodPath(service, method)
+	for _, file := range plugin.Request.SourceFileDescriptors {
+		for _, service := range file.GetService() {
+			for _, method := range service.GetMethod() {
+				bucket := fmt.Sprintf("%s.%s", file.GetPackage(), service.GetName())
+				defaultPath := fmt.Sprintf("/%s.%s/%s", file.GetPackage(), service.GetName(), method.GetName())
 
-				if opts, ok := method.Option("s12.protobuf.ratelimit.limit").(*ratelimit.MethodOptionsRateLimits); ok {
-					if opts.Limits != nil {
+				if methodOpts, ok := proto.GetExtension(method.GetOptions(), ratelimit.E_Limit).(*ratelimit.MethodOptionsRateLimits); ok && methodOpts != nil {
+					if methodOpts.Limits != nil {
 						bucket = defaultPath
 					}
 
-					if opts.Bucket != "" {
+					if methodOpts.Bucket != "" {
 						// We use the number as the strings value is likely out of date
-						bucket = fmt.Sprintf("custom_bucket:%s", opts.Bucket)
+						bucket = fmt.Sprintf("custom_bucket:%s", methodOpts.Bucket)
 					}
 				}
 
 				// Default method/path combination
 				addPattern("POST", defaultPath, bucket, false)
 
-				if opts, ok := method.Option("google.api.http").(httpext.HTTPExtension); ok {
-					for _, rule := range opts.Rules {
-						pathWithoutParams := paramMatch.ReplaceAllString(rule.Pattern, ".+")
-						hasParams := pathWithoutParams != rule.Pattern
+				// Extract HTTP rules
+				if httpOpts, ok := proto.GetExtension(method.GetOptions(), annotations.E_Http).(*annotations.HttpRule); ok {
+					addPattern(httpRuleToPattern(httpOpts, bucket))
 
-						addPattern(rule.Method, pathWithoutParams, bucket, hasParams)
+					for _, rule := range httpOpts.AdditionalBindings {
+						addPattern(httpRuleToPattern(rule, bucket))
 					}
 				}
 			}
