@@ -3,18 +3,11 @@ package genratelimit
 import (
 	"os"
 
-	plugin_go "github.com/golang/protobuf/protoc-gen-go/plugin"
-	gendoc "github.com/pseudomuto/protoc-gen-doc"
-	"github.com/pseudomuto/protokit"
-	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/compiler/protogen"
 	"gopkg.in/yaml.v3"
 )
 
-// PluginOptions encapsulates options for the plugin. The type of renderer, template file, and the name of the output
-// file are included.
-type PluginOptions struct {
-	ConfigFile string
-}
+const Version = "1.1.0"
 
 // Config is the configuration of the plugin
 type Config struct {
@@ -26,80 +19,53 @@ type Config struct {
 
 var delimiter = "|"
 
-// SupportedFeatures describes a flag setting for supported features.
-var SupportedFeatures = uint64(plugin_go.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
-
-// Plugin describes a protoc code generate plugin. It's an implementation of Plugin from github.com/pseudomuto/protokit
-type Plugin struct{}
-
-// Generate compiles the documentation and generates the CodeGeneratorResponse to send back to protoc. It does this
-// by rendering a template based on the options parsed from the CodeGeneratorRequest.
-func (p *Plugin) Generate(r *plugin_go.CodeGeneratorRequest) (*plugin_go.CodeGeneratorResponse, error) {
-	options, err := ParseOptions(r)
-	if err != nil {
-		return nil, err
+// Run executes the plugin using protogen
+func Run(gen *protogen.Plugin) error {
+	// Get config file path from parameters
+	configFile := "config.yaml"
+	if gen.Request.GetParameter() != "" {
+		configFile = gen.Request.GetParameter()
 	}
 
-	f, err := os.Open(options.ConfigFile)
+	// Read config file
+	f, err := os.Open(configFile)
 	if err != nil {
-		return nil, err
+		return err
 	}
+	defer f.Close()
 
 	var configYaml Config
 	err = yaml.NewDecoder(f).Decode(&configYaml)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if configYaml.Delimiter != "" {
 		delimiter = configYaml.Delimiter
 	}
 
-	result := protokit.ParseCodeGenRequest(r)
-
-	resp := new(plugin_go.CodeGeneratorResponse)
-	template := gendoc.NewTemplate(result)
-
-	luaOutput, err := GenerateLuaBucketer(template)
+	// Generate outputs
+	luaOutput, err := GenerateLuaBucketer(gen)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	yamlOutput, err := GenerateRateLimitsConfig(template, configYaml)
+	yamlOutput, err := GenerateRateLimitsConfig(gen, configYaml)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	resp.File = append(resp.File, &plugin_go.CodeGeneratorResponse_File{
-		Name:    proto.String("ratelimit_bucketer.lua"),
-		Content: proto.String(string(luaOutput)),
-	})
-
-	resp.File = append(resp.File, &plugin_go.CodeGeneratorResponse_File{
-		Name:    proto.String("config.yaml"),
-		Content: proto.String(string(yamlOutput)),
-	})
-
-	resp.SupportedFeatures = proto.Uint64(SupportedFeatures)
-
-	return resp, nil
-}
-
-// ParseOptions parses plugin options from a CodeGeneratorRequest. It does this by splitting the `Parameter` field from
-// the request object and parsing out the type of renderer to use and the name of the file to be generated.
-//
-// The parameter (`--doc_opt`) must be of the format <TYPE|TEMPLATE_FILE>,<OUTPUT_FILE>[,default|source_relative]:<EXCLUDE_PATTERN>,<EXCLUDE_PATTERN>*.
-// The file will be written to the directory specified with the `--doc_out` argument to protoc.
-func ParseOptions(req *plugin_go.CodeGeneratorRequest) (*PluginOptions, error) {
-	options := &PluginOptions{
-		ConfigFile: "config.yaml",
+	// Add outputs to response
+	luaFile := gen.NewGeneratedFile("ratelimit_bucketer.lua", "")
+	_, err = luaFile.Write(luaOutput)
+	if err != nil {
+		return err
 	}
 
-	params := req.GetParameter()
-	if params == "" {
-		return options, nil
+	yamlFile := gen.NewGeneratedFile("config.yaml", "")
+	_, err = yamlFile.Write(yamlOutput)
+	if err != nil {
+		return err
 	}
 
-	options.ConfigFile = params
-
-	return options, nil
+	return nil
 }

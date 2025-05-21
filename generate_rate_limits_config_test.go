@@ -1,32 +1,36 @@
 package genratelimit_test
 
 import (
-	"bytes"
 	"os"
+	"path/filepath"
 	"testing"
 
 	genratelimit "github.com/SafetyCulture/protoc-gen-ratelimit"
-	_ "github.com/SafetyCulture/protoc-gen-ratelimit/extensions/s12_protobuf_ratelimit" // imported for side effects
+	"github.com/stretchr/testify/require"
 
-	gendoc "github.com/pseudomuto/protoc-gen-doc"
-	_ "github.com/pseudomuto/protoc-gen-doc/extensions/google_api_http" // imported for side effects
-	"github.com/pseudomuto/protokit"
-	"github.com/pseudomuto/protokit/utils"
-	"gotest.tools/assert"
+	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/descriptorpb"
+	"google.golang.org/protobuf/types/pluginpb"
 )
 
 //go:generate buf build -o fixtures/image.bin
 
 func TestGenerateRateLimitsConfig(t *testing.T) {
-	set, err := utils.LoadDescriptorSet("fixtures", "image.bin")
-	assert.NilError(t, err)
+	f, err := os.ReadFile(filepath.Join("fixtures", "image.bin"))
+	require.NoError(t, err)
 
-	req := utils.CreateGenRequest(set, "fixtures/tasks.proto")
-	result := protokit.ParseCodeGenRequest(req)
+	fileDesc := &descriptorpb.FileDescriptorSet{}
+	err = proto.Unmarshal(f, fileDesc)
+	require.NoError(t, err)
 
-	template := gendoc.NewTemplate(result)
+	opts := &protogen.Options{}
+	plugin, err := opts.New(&pluginpb.CodeGeneratorRequest{
+		SourceFileDescriptors: fileDesc.GetFile(),
+	})
+	require.NoError(t, err)
 
-	content, err := genratelimit.GenerateRateLimitsConfig(template, genratelimit.Config{
+	content, err := genratelimit.GenerateRateLimitsConfig(plugin, genratelimit.Config{
 		Domain:      "my_domain",
 		Descriptors: []string{"api_class", "bucket"},
 		DefaultLimits: []genratelimit.Limit{
@@ -39,13 +43,10 @@ func TestGenerateRateLimitsConfig(t *testing.T) {
 			},
 		},
 	})
-	assert.NilError(t, err)
+	require.NoError(t, err)
 
-	f, err := os.ReadFile("./fixtures/_generated/config.yaml")
-	assert.NilError(t, err)
+	f, err = os.ReadFile("./fixtures/_generated/config.yaml")
+	require.NoError(t, err)
 
-	var buf bytes.Buffer
-	buf.Write(f)
-
-	assert.Equal(t, buf.String(), string(content))
+	require.Equal(t, string(f), string(content))
 }

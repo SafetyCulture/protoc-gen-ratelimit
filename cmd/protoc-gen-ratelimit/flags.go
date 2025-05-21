@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	genratelimit "github.com/pseudomuto/protoc-gen-doc"
+	genratelimit "github.com/SafetyCulture/protoc-gen-ratelimit"
 )
 
 const helpMessage = `
@@ -17,7 +17,7 @@ See https://github.com/SafetyCulture/protoc-gen-ratelimit for more details.
 
 // Version returns the currently running version of protoc-gen-ratelimit
 func Version() string {
-	return genratelimit.VERSION
+	return genratelimit.Version
 }
 
 // Flags contains details about the CLI invocation of protoc-gen-ratelimit
