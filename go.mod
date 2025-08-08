@@ -10,7 +10,7 @@ require (
 	github.com/pseudomuto/protokit v0.2.1
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/genproto v0.0.0-20210917145530-b395a37504d4
-	google.golang.org/protobuf v1.36.6
+	google.golang.org/protobuf v1.36.7
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
 )
