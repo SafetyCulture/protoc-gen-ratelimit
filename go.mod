@@ -10,7 +10,7 @@ require (
 	github.com/pseudomuto/protokit v0.2.1
 	github.com/stretchr/testify v1.11.1
 	google.golang.org/genproto v0.0.0-20210917145530-b395a37504d4
-	google.golang.org/protobuf v1.36.9
+	google.golang.org/protobuf v1.36.10
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
 )
@@ -20,7 +20,7 @@ require (
 	github.com/Masterminds/sprig v2.15.0+incompatible // indirect
 	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/huandu/xstrings v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.4 // indirect
