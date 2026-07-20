@@ -1,13 +1,11 @@
 module github.com/SafetyCulture/protoc-gen-ratelimit
 
-go 1.23
-
-toolchain go1.24.1
+go 1.26.4
 
 require (
 	github.com/golang/protobuf v1.5.4
 	github.com/pseudomuto/protoc-gen-doc v1.5.1
-	github.com/pseudomuto/protokit v0.2.1
+	github.com/pseudomuto/protokit v0.3.0
 	github.com/stretchr/testify v1.11.1
 	google.golang.org/genproto v0.0.0-20210917145530-b395a37504d4
 	google.golang.org/protobuf v1.36.11
