@@ -16,7 +16,7 @@ func formatKey(key, bucketName string, count int) (string, error) {
 
 	keys := strings.Count(key, delimiter)
 	if keys == count && (string(key[len(key)-1]) != delimiter && bucketName != "") {
-		return "", fmt.Errorf("key %s has too tuples, last one should be reserved for bucket", key)
+		return "", fmt.Errorf("key %s has too many tuples, last one should be reserved for bucket", key)
 	}
 	if keys > count-1 {
 		return "", fmt.Errorf("key %s has too many delimiters", key)

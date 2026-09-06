@@ -75,7 +75,7 @@ service TasksService {
 
 Additional or default limits can be configured within the configuration file given to protoc-gen-ratelimit.
 
-The format for `key` in both the configuration and proto file is a pipe separated string of values for the ratelimit descriptors. These map to the `descriptors` list supplied to the config base on their order. For example given a configuration of
+The format for `key` in both the configuration and proto file is a pipe separated string of values for the ratelimit descriptors. These map to the `descriptors` list supplied to the config based on their order. For example given a configuration of
 
 ```yaml
 descriptors:
