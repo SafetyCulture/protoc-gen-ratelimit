@@ -28,7 +28,7 @@ func (s limits) Less(i, j int) bool {
 			continue
 		}
 
-		// "" should be last, this ensure that the most specific tuple set is used
+		// "" should be last, this ensures that the most specific tuple set is used
 		if iKeys[idx] == "" {
 			return false
 		}

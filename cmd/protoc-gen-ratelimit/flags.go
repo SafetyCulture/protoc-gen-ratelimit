@@ -68,7 +68,7 @@ func (f *Flags) PrintVersion() {
 	fmt.Fprintf(f.writer, "%s version %s\n", f.appName, Version())
 }
 
-// ParseFlags parses the supplied options are returns a `Flags` object to the caller.
+// ParseFlags parses the supplied options and returns a `Flags` object to the caller.
 //
 // Parameters:
 //   - `w` - the `io.Writer` to use for printing messages (help, version, etc.)

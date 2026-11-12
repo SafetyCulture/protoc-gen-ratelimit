@@ -16,7 +16,7 @@ import (
 //go:embed templates/bucketer.lua.tmpl
 var bucketerTemplate string
 
-// Used to identify parameters in a path e.g. `/users/{used_id}`
+// Used to identify parameters in a path e.g. `/users/{user_id}`
 var paramMatch = regexp.MustCompile(`({\w+})`)
 
 // A path with an associated bucket
